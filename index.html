@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Odisea del Tiempo: Las Grandes Civilizaciones</title>
+    
+    <!-- Librerías mágicas para la exportación a PDF perfecta -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+        /* === VARIABLES DE COLOR Y ESTÉTICA === */
+        :root {
+            --gold: #D4AF37;
+            --gold-dark: #aa8929;
+            --terracotta: #E2725B;
+            --terracotta-dark: #C04000;
+            --lapis: #26619C;
+            --lapis-dark: #1F456E;
+            --marble: #F9F6F0;
+            --stone: #E0D8C8;
+            --stone-dark: #8C8270;
+            --text-dark: #2C2C2C;
+            --bg-dark: #1a1a1a;
+            
+            --font-title: 'Georgia', 'Times New Roman', serif;
+            --font-body: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* === RESET Y BASE === */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--bg-dark);
+            color: var(--text-dark);
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: var(--font-title);
+            color: var(--lapis-dark);
+        }
+
+        /* === COMPONENTES ESTÉTICOS === */
+        .parchment {
+            background-color: var(--marble);
+            background-image: radial-gradient(circle, #F9F6F0 60%, #e8e3d3 100%);
+            border: 3px solid var(--gold);
+            border-radius: 8px;
+            box-shadow: inset 0 0 30px rgba(139, 115, 85, 0.2), 0 10px 25px rgba(0,0,0,0.5);
+            padding: 2rem;
+            position: relative;
+        }
+
+        .stone-btn {
+            background: var(--stone);
+            border: 2px solid var(--stone-dark);
+            box-shadow: 0 4px 0 var(--stone-dark), inset 2px 2px 5px rgba(255,255,255,0.7);
+            color: var(--lapis-dark);
+            font-family: var(--font-title);
+            font-weight: bold;
+            font-size: 1.1rem;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.1s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .stone-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 var(--stone-dark), inset 2px 2px 5px rgba(255,255,255,0.7);
+        }
+
+        .stone-btn.primary {
+            background: var(--lapis);
+            color: var(--marble);
+            border-color: var(--lapis-dark);
+            box-shadow: 0 4px 0 var(--lapis-dark);
+        }
+        
+        .stone-btn.gold {
+            background: var(--gold);
+            color: var(--bg-dark);
+            border-color: var(--gold-dark);
+            box-shadow: 0 4px 0 var(--gold-dark);
+        }
+
+        .stone-btn.small {
+            font-size: 0.9rem;
+            padding: 8px 15px;
+        }
+        
+        .stone-btn:disabled {
+            background: #ccc;
+            border-color: #999;
+            color: #666;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .discreet-btn {
+            background: none;
+            border: none;
+            color: var(--marble);
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-family: var(--font-body);
+            opacity: 0.8;
+            padding: 5px;
+            transition: all 0.2s;
+        }
+        
+        .discreet-btn:hover {
+            opacity: 1;
+            color: var(--gold);
+        }
+
+        .mosaic-border {
+            border: 10px solid transparent;
+            border-image: repeating-linear-gradient(45deg, var(--lapis) 0, var(--lapis) 10px, var(--gold) 10px, var(--gold) 20px, var(--terracotta) 20px, var(--terracotta) 30px) 10;
+        }
+
+        input[type="text"], input[type="password"], select {
+            padding: 12px;
+            font-size: 1.1rem;
+            border: 2px solid var(--stone-dark);
+            background: var(--marble);
+            border-radius: 4px;
+            font-family: var(--font-body);
+            width: 100%;
+            max-width: 300px;
+        }
+
+        /* === LLM GEMINI ESTILOS MÁGICOS Y MOTIVADORES === */
+        .magic-card {
+            grid-column: span 2;
+            border: 2px solid var(--gold);
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 20px;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+            position: relative;
+            color: white;
+            overflow: hidden;
+        }
+        
+        .magic-card.chat {
+            background: linear-gradient(135deg, #1e0b36 0%, #3a1c71 100%);
+        }
+        
+        .magic-card.paint {
+            background: linear-gradient(135deg, #0b2036 0%, #1f456e 100%);
+            border-color: #7ab4e1;
+            box-shadow: 0 0 20px rgba(122, 180, 225, 0.3);
+        }
+
+        .magic-card h3 {
+            color: var(--gold);
+            font-size: 1.8rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            margin-bottom: 10px;
+        }
+        
+        .magic-card.paint h3 {
+            color: #bde0ff;
+        }
+
+        .magic-card p {
+            font-size: 1.1rem;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            color: #eaeaea;
+        }
+
+        .magic-input-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .magic-input-group input {
+            flex: 1;
+            min-width: 250px;
+            max-width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid var(--gold);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .magic-btn {
+            background: linear-gradient(45deg, var(--gold), var(--gold-dark));
+            border: none;
+            color: var(--bg-dark);
+            font-family: var(--font-title);
+            font-weight: bold;
+            font-size: 1.1rem;
+            padding: 12px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            transition: all 0.2s;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .magic-btn:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.6);
+        }
+        
+        .magic-card.paint .magic-btn {
+            background: linear-gradient(45deg, #5b9bd5, #2b6a9c);
+            color: white;
+        }
+        .magic-card.paint .magic-btn:hover {
+            box-shadow: 0 6px 20px rgba(91, 155, 213, 0.6);
+        }
+
+        .llm-response {
+            background: rgba(0, 0, 0, 0.6);
+            color: #fcebbb;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: var(--font-body);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            border-left: 5px solid var(--gold);
+            display: none;
+            margin-top: 20px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+        }
+
+        .generated-image-container {
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .generated-image-container img {
+            max-width: 100%;
+            border: 5px solid #bde0ff;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+        }
+
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+            cursor: wait !important;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.98); opacity: 0.8; }
+            100% { transform: scale(1); }
+        }
+
+        /* === LAYOUT SCREENS === */
+        .screen {
+            display: none;
+            flex: 1;
+            padding: 20px;
+            padding-bottom: 80px;
+            animation: fadeIn 0.5s ease-in-out;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* === ESPECÍFICO POR PANTALLA === */
+        /* Gateway */
+        #screen-gateway { background: radial-gradient(circle, var(--lapis-dark) 0%, var(--bg-dark) 100%); }
+        .temple-door { text-align: center; color: var(--gold); }
+        .temple-door h1 { color: var(--gold); font-size: 3rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); margin-bottom: 2rem; border-bottom: 2px solid var(--gold); padding-bottom: 10px; }
+        .error-msg { color: var(--terracotta); margin-top: 10px; font-weight: bold; min-height: 24px; }
+
+        /* Onboarding */
+        .sabio-container { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; background: rgba(255,255,255,0.5); padding: 15px; border-radius: 10px; border-left: 5px solid var(--lapis); }
+        .sabio-icon { font-size: 4rem; }
+        .instructions-list { margin-left: 20px; line-height: 1.8; margin-bottom: 20px; font-size: 1.1rem; }
+        .instructions-list li { margin-bottom: 10px; }
+
+        /* Main Menu (Map) */
+        .map-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 100%; max-width: 800px; margin-top: 20px; }
+        .civ-card { background-color: rgba(249, 246, 240, 0.9); border: 2px solid var(--stone-dark); border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; transition: transform 0.3s, box-shadow 0.3s; }
+        .civ-card:hover { transform: scale(1.05); box-shadow: 0 10px 20px rgba(0,0,0,0.3); border-color: var(--gold); }
+        .civ-card.completed { border-color: #28a745; background-color: #e8f5e9; }
+        .civ-card.completed::after { content: ' ✔️ Dominada'; display: block; color: #28a745; font-weight: bold; margin-top: 10px; }
+        
+        .civ-card.arena-card { grid-column: span 2; background: linear-gradient(135deg, var(--terracotta) 0%, var(--terracotta-dark) 100%); color: white; border-color: var(--gold); }
+
+        /* Theory Page */
+        .theory-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; width: 100%; }
+        .info-box { background: rgba(255,255,255,0.6); padding: 15px; border-radius: 5px; border-left: 4px solid var(--lapis); }
+        .oracle-section { grid-column: span 2; background: var(--lapis-dark); color: var(--marble); padding: 25px; border-radius: 12px; margin-top: 20px; border: 2px solid var(--stone-dark); }
+        .oracle-result { margin-top: 20px; padding: 15px; display: none; }
+        
+        /* Register & Avatars */
+        .avatar-grid { display: flex; justify-content: center; gap: 15px; margin: 20px 0; flex-wrap: wrap; }
+        .avatar-option { border: 3px solid var(--stone); border-radius: 10px; padding: 10px; cursor: pointer; text-align: center; width: 120px; transition: all 0.3s; }
+        .avatar-option.selected { border-color: var(--gold); background: rgba(212, 175, 55, 0.2); transform: scale(1.1); }
+        .avatar-option div { font-size: 3rem; }
+
+        /* HUD & Game */
+        .game-hud { width: 100%; display: flex; justify-content: space-between; background: var(--lapis-dark); color: var(--marble); padding: 10px 20px; border-radius: 5px; margin-bottom: 20px; align-items: center; border-bottom: 3px solid var(--gold); flex-wrap: wrap; gap: 10px;}
+        .rank-badge { background: var(--gold); color: var(--bg-dark); padding: 5px 10px; border-radius: 15px; font-weight: bold; }
+        .question-container { font-size: 1.3rem; margin-bottom: 20px; text-align: center; font-weight: bold; color: var(--lapis-dark); }
+        .options-grid { display: grid; grid-template-columns: 1fr; gap: 10px; width: 100%; }
+        .option-btn { background: var(--marble); border: 2px solid var(--lapis); padding: 15px; font-size: 1.1rem; cursor: pointer; border-radius: 5px; transition: all 0.2s; text-align: left; font-family: var(--font-body); }
+        .option-btn:hover:not(:disabled) { background: #e6f0fa; }
+        .option-btn.correct { background: #d4edda !important; border-color: #28a745 !important; }
+        .option-btn.wrong { background: #f8d7da !important; border-color: #dc3545 !important; }
+
+        /* Modal Generales */
+        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--marble); border: 4px solid var(--gold); border-radius: 10px; padding: 30px; z-index: 1000; max-width: 90%; width: 500px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); text-align: center; max-height: 90vh; overflow-y: auto; }
+        .modal.active { display: block; animation: fadeIn 0.3s; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 999; }
+        .modal-overlay.active { display: block; }
+        
+        .correct-title { color: #28a745; font-family: var(--font-title); }
+        .wrong-title { color: #dc3545; font-family: var(--font-title); }
+
+        /* Lista de Rangos */
+        .ranks-list { text-align: left; margin: 20px 0; border: 2px solid var(--stone); border-radius: 5px; padding: 15px; background: white; }
+        .ranks-list li { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed var(--stone); list-style: none; display: flex; align-items: center; gap: 10px;}
+        .ranks-list li:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .rank-req { font-size: 0.8rem; color: #666; display: block; }
+
+        /* Tic Tac Toe */
+        .tic-tac-toe-grid { display: grid; grid-template-columns: repeat(3, 100px); gap: 10px; justify-content: center; margin: 30px auto; }
+        .ttt-cell { width: 100px; height: 100px; font-size: 4rem; background: var(--stone); border: 3px solid var(--lapis-dark); cursor: pointer; display: flex; align-items: center; justify-content: center; font-family: var(--font-title); color: var(--lapis-dark); transition: background 0.2s; border-radius: 8px;}
+        .ttt-cell:hover { background: var(--marble); }
+        .ttt-cell.x { color: #28a745; }
+        .ttt-cell.o { color: #dc3545; }
+
+        /* Triumph / Diploma */
+        .diploma-container { border: 15px solid transparent; border-image: repeating-linear-gradient(45deg, var(--gold) 0, var(--gold) 10px, var(--bg-dark) 10px, var(--bg-dark) 20px) 10; padding: 40px; text-align: center; background: var(--marble); margin-bottom: 20px; }
+        .diploma-container h1 { font-size: 2.5rem; margin-bottom: 10px; color: var(--lapis-dark); }
+        .diploma-container h2 { font-size: 1.8rem; color: var(--terracotta); margin-bottom: 20px; }
+        .seal { width: 100px; height: 100px; background: var(--terracotta-dark); border-radius: 50%; margin: 20px auto; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; border: 4px dashed var(--gold); text-align: center; line-height: 1.2; }
+
+        /* Footer */
+        footer { position: fixed; bottom: 0; width: 100%; background: var(--bg-dark); color: var(--gold); text-align: center; padding: 15px; font-family: var(--font-title); font-size: 0.9rem; border-top: 2px solid var(--gold); z-index: 10; }
+
+        /* Top Bar Info */
+        .top-bar { display: flex; justify-content: space-between; width: 100%; margin-bottom: 20px; }
+
+        /* Media Queries */
+        @media (max-width: 768px) {
+            .map-container, .theory-grid { grid-template-columns: 1fr; }
+            .civ-card.arena-card { grid-column: span 1; }
+            .oracle-section { grid-column: span 1; }
+            .magic-input-group { flex-direction: column; }
+            .magic-btn { width: 100%; }
+            .game-hud { flex-direction: column; text-align: center; }
+            .game-hud > div { justify-content: center; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- FASE 1: PORTAL DEL TIEMPO -->
+    <div id="screen-gateway" class="screen active">
+        <div class="temple-door">
+            <h1>🏛️ Odisea del Tiempo 🏛️</h1>
+            <div class="parchment" style="max-width: 400px; margin: 0 auto;">
+                <p>Bienvenido al archivo de la Antigüedad. Solo aquellos con la contraseña correcta pueden entrar.</p>
+                <p style="font-size: 0.8rem; margin-bottom: 15px; color: var(--lapis);">(Pista: El monte donde viven los dioses griegos)</p>
+                <input type="password" id="gateway-password" placeholder="Introduce la contraseña...">
+                <div id="gateway-error" class="error-msg"></div>
+                <br><br>
+                <button class="stone-btn gold" onclick="checkPassword()">Atravesar el portal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ONBOARDING (Instrucciones detalladas para primaria) -->
+    <div id="screen-onboarding" class="screen">
+        <div class="parchment mosaic-border" style="max-width: 800px;">
+            <h2 style="text-align: center; margin-bottom: 20px;">📜 Tu aventura comienza aquí 📜</h2>
+            <div class="sabio-container">
+                <div class="sabio-icon">🧙‍♂️</div>
+                <div>
+                    <h3 style="margin-bottom: 10px;">¡Hola, joven explorador! Soy el Sabio del Tiempo.</h3>
+                    <p>Seré tu guía en este viaje por la historia. Tu misión es aprender sobre las cuatro civilizaciones que formaron nuestro mundo y convertirte en el gran <strong>Titán del Tiempo</strong>. ¡Presta mucha atención a las reglas!</p>
+                </div>
+            </div>
+            
+            <ul class="instructions-list">
+                <li>🏺 <strong>1. Estudia en el mapa:</strong> Toca cada cultura (Mesopotamia, Egipto, Grecia y Roma) para leer sus secretos. Aprovecha para charlar conmigo o pedirme que te pinte un cuadro mágico del pasado.</li>
+                <li>🔮 <strong>2. Usa el Oráculo:</strong> En cada cultura encontrarás una bola de cristal (Oráculo Comparativo). Sirve para que veas las diferencias; por ejemplo, cómo escribían en Egipto frente a cómo lo hacían en Roma. ¡Es súper útil para crear mapas mentales!</li>
+                <li>⚔️ <strong>3. Entra a la Arena:</strong> Cuando te sientas preparado, ve a la "Arena de los Desafíos". Allí te haré 10 preguntas por cada civilización. <strong>¡NUEVA REGLA!</strong> Los dioses son exigentes pero benevolentes: tienes derecho a <strong>fallar 1 sola vez por civilización</strong>. Si fallas una segunda vez, serás expulsado de la Arena y deberás empezar de nuevo esa cultura.</li>
+                <li>🏅 <strong>4. Sube de rango:</strong> Empezarás siendo un humilde "Aprendiz". Conforme domines más civilizaciones, te ascenderé a Ciudadano, Patricio, Senador y, finalmente, ¡Emperador!</li>
+                <li>⚡ <strong>5. El duelo final:</strong> Si logras dominar las 4 culturas, desbloquearás un juego secreto contra mí: "El duelo de los dioses". No te preocupes si pierdes o empatas, <strong>podrás reintentarlo todas las veces que necesites</strong> hasta ganar.</li>
+            </ul>
+            <div style="text-align: center;">
+                <button class="stone-btn primary" onclick="nav('screen-menu')">¡Estoy listo! Ver el mapa</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MENÚ PRINCIPAL (El Mapa) -->
+    <div id="screen-menu" class="screen">
+        <h2 style="color: var(--marble); text-shadow: 2px 2px 4px black; font-size: 2.5rem; text-align: center;">El mar Mediterráneo</h2>
+        <div class="map-container">
+            <div class="civ-card" onclick="loadTheory('mesopotamia')">
+                <div style="font-size: 3rem;">🏺</div>
+                <h2>Mesopotamia</h2>
+            </div>
+            <div class="civ-card" onclick="loadTheory('egipto')">
+                <div style="font-size: 3rem;">👁️</div>
+                <h2>Egipto</h2>
+            </div>
+            <div class="civ-card" onclick="loadTheory('grecia')">
+                <div style="font-size: 3rem;">🏛️</div>
+                <h2>Grecia</h2>
+            </div>
+            <div class="civ-card" onclick="loadTheory('roma')">
+                <div style="font-size: 3rem;">🦅</div>
+                <h2>Roma</h2>
+            </div>
+            <div class="civ-card arena-card" onclick="nav('screen-register')">
+                <div style="font-size: 3rem;">⚔️</div>
+                <h2>LA ARENA DE LOS DESAFÍOS</h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- FASE 2: ARCHIVO HISTÓRICO (TEORÍA) -->
+    <div id="screen-theory" class="screen">
+        <div class="top-bar">
+            <button class="stone-btn" onclick="nav('screen-menu')">◀ Volver al mapa</button>
+        </div>
+        <div class="parchment" style="width: 100%;">
+            <h1 id="theory-title" style="text-align: center; font-size: 2.5rem; border-bottom: 2px solid var(--gold); padding-bottom: 10px;">Título</h1>
+            <div class="theory-grid">
+                <div class="info-box">
+                    <h3>📍 Ubicación</h3>
+                    <p id="theory-location"></p>
+                </div>
+                <div class="info-box">
+                    <h3>👑 Organización y sociedad</h3>
+                    <p id="theory-politics"></p>
+                </div>
+                <div class="info-box" style="grid-column: span 2;">
+                    <h3>✨ Aportes culturales</h3>
+                    <p id="theory-culture"></p>
+                </div>
+
+                <!-- ORÁCULO COMPARATIVO (Mejorado) -->
+                <div class="oracle-section">
+                    <h3 style="color: var(--gold); font-size: 1.6rem; margin-bottom: 10px;">🔮 El Oráculo Comparativo</h3>
+                    <p style="margin-bottom: 15px; font-size: 1.1rem; line-height: 1.5;">El Oráculo es una herramienta mágica para conectar ideas. Elige un tema de la lista. Te mostraré primero cómo lo resolvía la cultura que estás estudiando, y justo debajo te enseñaré de forma rápida cómo lo hacían las demás. ¡Ideal para no confundirte en la Arena!</p>
+                    <select id="oracle-select" onchange="useOracle()" style="font-weight: bold; color: var(--lapis-dark);">
+                        <option value="">Elige un tema para comparar...</option>
+                        <option value="escritura">📝 Tipo de escritura</option>
+                        <option value="rios">🌊 Importancia del agua (Ríos y mares)</option>
+                        <option value="arquitectura">🏛️ Sus grandes construcciones</option>
+                    </select>
+                    <div id="oracle-result" class="oracle-result"></div>
+                </div>
+
+                <!-- EL SABIO DEL TIEMPO: CHAT MÁGICO -->
+                <div class="magic-card chat">
+                    <h3>✨ La Sabiduría de los Dioses</h3>
+                    <p>¡Despierta el poder del conocimiento! ¿Tienes alguna duda curiosa sobre <strong id="llm-civ-name" style="color: var(--gold);">esta civilización</strong>? Escríbela y usaré mi magia milenaria para responderte como si estuvieras allí.</p>
+                    <div class="magic-input-group">
+                        <input type="text" id="llm-query" placeholder="Ej: ¿A qué jugaban los niños en las calles?">
+                        <button id="btn-ask-llm" class="magic-btn" onclick="askSabioLLM()">🔮 Consultar al Sabio</button>
+                    </div>
+                    <div id="llm-response" class="llm-response"></div>
+                </div>
+
+                <!-- EL PINCEL DEL SABIO: IMÁGENES -->
+                <div class="magic-card paint">
+                    <h3>🎨 El Pincel Mágico del Tiempo</h3>
+                    <p>¡Viaja al pasado con tus propios ojos! Pídeme que te pinte una escena realista de esta cultura. Usa tu imaginación y descríbelo con detalle.</p>
+                    <div class="magic-input-group">
+                        <input type="text" id="imagen-query" placeholder="Ej: Un enorme mercado al atardecer lleno de vasijas de barro">
+                        <button id="btn-generate-image" class="magic-btn" onclick="generateHistoricalImage()">🖌️ Pintar Visión</button>
+                    </div>
+                    <div id="imagen-feedback" class="llm-response" style="border-left-color: var(--terracotta);"></div>
+                    <div id="imagen-response" class="generated-image-container">
+                        <img id="generated-historical-img" src="" alt="Visión generada por IA">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FASE 3: ARENA DE DESAFÍOS (Registro) -->
+    <div id="screen-register" class="screen">
+        <div class="top-bar">
+            <button class="stone-btn" onclick="nav('screen-menu')">◀ Volver al mapa</button>
+        </div>
+        <div class="parchment mosaic-border" style="max-width: 600px;">
+            <h2 style="text-align: center;">Inscripción en la Arena</h2>
+            <div style="text-align: center; margin-top: 20px;">
+                <input type="text" id="player-name" placeholder="Escribe tu nombre..." maxlength="20">
+            </div>
+            <h3 style="text-align: center; margin-top: 20px;">Elige a tu personaje:</h3>
+            <div class="avatar-grid">
+                <div class="avatar-option" onclick="selectAvatar('Legionario', '🛡️')"><div>🛡️</div><p>Legionario</p></div>
+                <div class="avatar-option" onclick="selectAvatar('Faraón', '👑')"><div>👑</div><p>Faraón</p></div>
+                <div class="avatar-option" onclick="selectAvatar('Filósofo', '🦉')"><div>🦉</div><p>Filósofo</p></div>
+                <div class="avatar-option" onclick="selectAvatar('Escriba', '📜')"><div>📜</div><p>Escriba</p></div>
+            </div>
+            <div id="register-error" class="error-msg" style="text-align: center;"></div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="stone-btn primary" onclick="enterArena()">Entrar a la Arena</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Selección de Nivel en la Arena -->
+    <div id="screen-levels" class="screen">
+        <div class="game-hud">
+            <div>👤 <span id="hud-name">Nombre</span> (<span id="hud-avatar">🛡️</span>)</div>
+            
+            <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                <div>Rango: <span id="hud-rank" class="rank-badge">Aprendiz</span></div>
+                <!-- Botón discreto junto al rango -->
+                <button class="discreet-btn" onclick="document.getElementById('modal-ranks').classList.add('active'); document.getElementById('modal-overlay').classList.add('active');">👁️ Ver rangos</button>
+                <!-- Botón del informe junto a los rangos -->
+                <button id="btn-claim-triumph" class="stone-btn gold small" onclick="checkTriumph()">📜 Generar Informe</button>
+            </div>
+        </div>
+        
+        <h2 style="color: var(--marble); text-shadow: 2px 2px 4px black; text-align: center;">Elige tu Desafío</h2>
+        <p style="text-align: center; color: white; font-size: 1.1rem; margin-top: 10px;">Sobrevive a las 10 preguntas. ¡Solo puedes fallar 1 vez!</p>
+        
+        <div class="map-container" style="margin: 0 auto; margin-top: 30px;">
+            <button id="btn-lvl-mesopotamia" class="stone-btn civ-btn" onclick="startGame('mesopotamia')">Desafío: Mesopotamia</button>
+            <button id="btn-lvl-egipto" class="stone-btn civ-btn" onclick="startGame('egipto')">Desafío: Egipto</button>
+            <button id="btn-lvl-grecia" class="stone-btn civ-btn" onclick="startGame('grecia')">Desafío: Grecia</button>
+            <button id="btn-lvl-roma" class="stone-btn civ-btn" onclick="startGame('roma')">Desafío: Roma</button>
+            
+            <!-- NUEVO: Nivel Extra 3 en Raya -->
+            <button id="btn-final-level" class="stone-btn gold" style="grid-column: span 2; margin-top: 20px; display: none; padding: 15px;" onclick="startTicTacToe()">
+                ⚔️ EL DUELO DE LOS DIOSES (Juego Final) ⚔️
+            </button>
+
+            <button class="stone-btn" style="grid-column: span 2; background: var(--bg-dark); color: white; margin-top: 15px;" onclick="nav('screen-menu')">Abandonar la Arena</button>
+        </div>
+    </div>
+
+    <!-- Pantalla de Juego Normal -->
+    <div id="screen-game" class="screen">
+        <div class="game-hud">
+            <div>👤 <span id="game-name">Nombre</span></div>
+            <div>Aciertos: <span id="game-score">0/10</span> | Fallos permitidos: <span id="game-mistakes" style="color: #f59e0b; font-weight: bold;">1</span></div>
+        </div>
+        <div class="parchment" style="width: 100%; max-width: 800px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-weight: bold; color: var(--terracotta);">
+                <span id="question-civ">Civilización</span>
+                <span id="question-counter">Pregunta 1/10</span>
+            </div>
+            <div id="question-text" class="question-container">¿Pregunta?</div>
+            <div id="options-container" class="options-grid"></div>
+        </div>
+    </div>
+
+    <!-- Pantalla 3 en Raya (Nivel Extra) -->
+    <div id="screen-tictactoe" class="screen">
+        <div class="game-hud">
+            <div>👤 <span id="ttt-name">Nombre</span> vs 🧙‍♂️ El Sabio</div>
+            <div style="font-weight: bold; color: var(--gold);">El duelo de los dioses</div>
+        </div>
+        <div class="parchment" style="width: 100%; max-width: 600px; text-align: center;">
+            <h2>Tres en Raya Histórico</h2>
+            <p style="margin-top: 10px;">Para colocar tu marca 'X', debes responder correctamente a una pregunta al azar sobre cualquier cultura. Si fallas, colocaré mi 'O'.</p>
+            
+            <div class="tic-tac-toe-grid" id="ttt-grid">
+                <!-- Generado por JS -->
+            </div>
+            
+            <button class="stone-btn" onclick="nav('screen-levels')">Huir del duelo</button>
+        </div>
+    </div>
+
+    <!-- Triunfo / Diploma (Informe) -->
+    <div id="screen-triumph" class="screen">
+        <div class="diploma-container" id="diploma">
+            <h1 style="font-family: 'Georgia', serif;">S.P.Q.R.</h1>
+            <h2 style="font-family: 'Georgia', serif; border-bottom: 2px solid var(--gold); padding-bottom: 10px;">Informe Imperial de Progreso</h2>
+            <p style="font-size: 1.2rem; margin-top: 20px;">Se certifica el conocimiento y valor de:</p>
+            <h3 id="diploma-name" style="font-size: 2.5rem; color: var(--lapis-dark); margin: 20px 0;">[Nombre]</h3>
+            <p style="font-size: 1.2rem; margin-bottom: 30px;">En los terrenos de Mesopotamia, Egipto, Grecia y Roma.</p>
+            
+            <div style="display: flex; justify-content: space-around; gap: 20px; flex-wrap: wrap; border-top: 1px dashed var(--gold); border-bottom: 1px dashed var(--gold); padding: 20px 0;">
+                <div>
+                    <strong style="color: var(--lapis-dark); font-size: 1.1rem;">Rango Actual Alcanzado:</strong>
+                    <div id="diploma-rank" style="font-size: 1.8rem; color: var(--gold-dark); font-weight: bold; margin-top: 10px;">Aprendiz</div>
+                </div>
+                <div>
+                    <strong style="color: var(--lapis-dark); font-size: 1.1rem;">Duelo de los dioses:</strong>
+                    <div id="diploma-duelo" style="font-size: 1.8rem; font-weight: bold; margin-top: 10px;">No superado ❌</div>
+                </div>
+            </div>
+            
+            <div class="seal">SELLO<br>DEL SABIO</div>
+        </div>
+        <div style="text-align: center; gap: 15px; display: flex; justify-content: center; flex-wrap: wrap;">
+            <button class="stone-btn gold" onclick="downloadPDF()">🖨️ IMPRIMIR INFORME</button>
+            <button class="stone-btn primary" onclick="nav('screen-levels')">VOLVER A LA ARENA</button>
+        </div>
+    </div>
+
+    <!-- Overlays y Modales Compartidos -->
+    <div class="modal-overlay" id="modal-overlay"></div>
+
+    <!-- Modal Rangos -->
+    <div id="modal-ranks" class="modal">
+        <h2>Jerarquía del Tiempo</h2>
+        <ul class="ranks-list">
+            <li><span>🌱</span><div><strong>Aprendiz</strong><span class="rank-req">0 civilizaciones superadas</span></div></li>
+            <li><span>🏛️</span><div><strong>Ciudadano</strong><span class="rank-req">1 civilización superada</span></div></li>
+            <li><span>⚖️</span><div><strong>Patricio</strong><span class="rank-req">2 civilizaciones superadas</span></div></li>
+            <li><span>📜</span><div><strong>Senador</strong><span class="rank-req">3 civilizaciones superadas</span></div></li>
+            <li><span>👑</span><div><strong>Emperador</strong><span class="rank-req">4 civilizaciones superadas</span></div></li>
+            <li><span>⚡</span><div><strong style="color: var(--terracotta);">Titán del Tiempo</strong><span class="rank-req">Vencer al Sabio en el duelo final</span></div></li>
+        </ul>
+        <button class="stone-btn" onclick="closeModals()">Entendido</button>
+    </div>
+
+    <!-- Modal Feedback Sabio -->
+    <div id="sabio-feedback" class="modal">
+        <div class="sabio-icon" style="margin-bottom: 10px;">🧙‍♂️</div>
+        <h2 id="sabio-title" class="correct-title">¡Correcto!</h2>
+        <p id="sabio-text"></p>
+        <button id="btn-sabio-continue" class="stone-btn" style="margin-top: 15px;" onclick="nextQuestion()">Continuar</button>
+    </div>
+
+    <!-- Modal TTT Question -->
+    <div id="ttt-question-modal" class="modal">
+        <h3 id="ttt-q-title" style="color: var(--lapis-dark); margin-bottom: 15px;">Pregunta del duelo</h3>
+        <p id="ttt-q-text" class="question-container" style="font-size: 1.1rem;"></p>
+        <div id="ttt-q-options" class="options-grid"></div>
+    </div>
+
+    <!-- FOOTER FIJO -->
+    <footer>Hecho por maestro Manuel Adolfo</footer>
+
+    <script>
+        // === DATOS TEÓRICOS ENRIQUECIDOS PARA 6º DE PRIMARIA (Ortografía RAE) ===
+        const civData = {
+            mesopotamia: { 
+                title: "Mesopotamia", 
+                location: "🌍 <strong>Ubicación:</strong> Se encontraba en Oriente Próximo, justo entre los caudalosos ríos <strong>Tigris y Éufrates</strong> (en el actual Irak). ¡Su nombre significa literalmente <em>'Tierra entre ríos'</em>!", 
+                politics: "👑 <strong>Sociedad y política:</strong> No eran un solo país, sino varias <strong>ciudades-estado</strong> independientes (como Ur, Uruk o Babilonia). Estaban gobernadas por un rey llamado <strong>lugal</strong>, que también actuaba como el sumo sacerdote y hablaba con los dioses.", 
+                culture: "✨ <strong>Grandes inventos:</strong><ul style='margin-left: 20px; margin-top: 10px;'><li>📝 <strong>La escritura cuneiforme:</strong> El primer sistema de escritura del mundo, hecho con cuñas sobre arcilla húmeda.</li><li>🏛️ <strong>Los zigurats:</strong> Enormes templos escalonados de adobe para observar las estrellas.</li><li>⚖️ <strong>El código de Hammurabi:</strong> La primera ley escrita de la historia (la famosa ley del <em>'Ojo por ojo'</em>).</li><li>⚙️ <strong>La rueda:</strong> ¡Revolucionaron el transporte para siempre!</li></ul>" 
+            },
+            egipto: { 
+                title: "Egipto", 
+                location: "🌍 <strong>Ubicación:</strong> Surgió en el noreste de África. Todo su imperio creció a orillas del majestuoso <strong>río Nilo</strong>. Sin las aguas y el barro fértil del Nilo, Egipto habría sido solo un desierto inhóspito.", 
+                politics: "👑 <strong>Sociedad y política:</strong> Era un imperio inmenso gobernado por un solo líder supremo: el <strong>faraón</strong>. ¡No era solo un rey, los egipcios creían que era un dios viviente en la Tierra!", 
+                culture: "✨ <strong>Magia y misterio:</strong><ul style='margin-left: 20px; margin-top: 10px;'><li>🔺 <strong>Las pirámides:</strong> Colosales tumbas de piedra construidas para el viaje eterno de los faraones.</li><li>🤕 <strong>Las momias:</strong> Eran expertos médicos que preservaban los cuerpos para el 'Más Allá'.</li><li>👁️ <strong>Los jeroglíficos:</strong> Una misteriosa escritura basada en hermosos dibujos sagrados.</li><li>📜 <strong>El papiro:</strong> El abuelo del papel moderno, fabricado con plantas del río.</li></ul>" 
+            },
+            grecia: { 
+                title: "Grecia", 
+                location: "🌍 <strong>Ubicación:</strong> Nacieron en la península de los Balcanes y en cientos de islas del <strong>mar Egeo y Mediterráneo</strong>. Como su tierra era muy montañosa, se convirtieron en los mejores marineros de la antigüedad.", 
+                politics: "👑 <strong>Sociedad y política:</strong> Se dividían en <strong>polis</strong> (ciudades-estado) muy diferentes entre sí. <strong>Atenas</strong> valoraba el arte y creó la <strong>democracia</strong> (donde los ciudadanos votaban las leyes). <strong>Esparta</strong> era una ciudad de guerreros implacables.", 
+                culture: "✨ <strong>El legado griego:</strong><ul style='margin-left: 20px; margin-top: 10px;'><li>🦉 <strong>La filosofía:</strong> Grandes pensadores como Sócrates que se hacían preguntas sobre el universo.</li><li>🏛️ <strong>El Partenón:</strong> Maestros de la arquitectura con elegantes columnas de mármol.</li><li>🏃‍♂️ <strong>Juegos Olímpicos:</strong> Competiciones deportivas creadas para honrar al dios Zeus.</li><li>🎭 <strong>El teatro:</strong> Inventaron la tragedia y la comedia usando máscaras dramáticas.</li></ul>" 
+            },
+            roma: { 
+                title: "Roma", 
+                location: "🌍 <strong>Ubicación:</strong> Todo empezó en la península itálica (la que tiene forma de bota). Fueron tan poderosos que conquistaron todas las tierras alrededor del mar Mediterráneo, al que llamaron orgullosamente <strong>'Mare Nostrum'</strong> (Nuestro mar).", 
+                politics: "👑 <strong>Sociedad y política:</strong> Roma cambió con los siglos. Empezó con reyes, luego fue una <strong>república</strong> (gobernada por un Senado donde se debatía), y terminó siendo un colosal <strong>imperio</strong> dirigido por un emperador.", 
+                culture: "✨ <strong>Maestros ingenieros:</strong><ul style='margin-left: 20px; margin-top: 10px;'><li>💧 <strong>Los acueductos:</strong> Puentes de agua gigantescos que llevaban agua dulce a sus ciudades.</li><li>🛣️ <strong>Las calzadas:</strong> Una inmensa red de autopistas de piedra ('Todos los caminos llevan a Roma').</li><li>⚖️ <strong>El derecho romano:</strong> Sus leyes son la base de la justicia en casi todo el mundo actual.</li><li>🗣️ <strong>El latín:</strong> Su idioma es el 'padre' del español, francés, italiano y portugués.</li></ul>" 
+            }
+        };
+        
+        // Base de datos para el Oráculo (rediseñada para ser más comparativa y directa)
+        const oracleData = {
+            escritura: { 
+                mesopotamia: "<strong>Escritura cuneiforme:</strong> El primer sistema del mundo. Usaban un palito en forma de cuña para hacer marcas en tablillas de arcilla blanda.", 
+                egipto: "<strong>Jeroglíficos:</strong> Escribían usando dibujos mágicos de animales y objetos, tallándolos en piedra o pintándolos en papiro.", 
+                grecia: "<strong>Alfabeto griego:</strong> Tomaron las letras de otros pueblos y fueron los primeros en añadirles las vocales. Es la base de nuestro alfabeto.", 
+                roma: "<strong>Alfabeto latino:</strong> Copiaron el alfabeto de los griegos y lo adaptaron. ¡Es exactamente el mismo abecedario que usamos nosotros hoy en día!" 
+            },
+            rios: { 
+                mesopotamia: "<strong>Tigris y Éufrates:</strong> Dependían totalmente de estos dos grandes ríos. Sus inundaciones eran violentas y por eso inventaron canales y diques para controlarlas.", 
+                egipto: "<strong>Río Nilo:</strong> Tenían un único río, pero era su tesoro. Las inundaciones eran tan predecibles y buenas para sembrar que los egipcios casi lo adoraban como a un dios.", 
+                grecia: "<strong>El mar Egeo:</strong> Como su país estaba lleno de montañas y apenas tenían ríos navegables, tuvieron que echarse al mar. Se convirtieron en expertos navegantes.", 
+                roma: "<strong>El mar Mediterráneo:</strong> Nacieron junto al río Tíber, pero su ambición les hizo conquistar todas las costas del Mediterráneo, al que llamaron 'Mare Nostrum' (Nuestro mar)." 
+            },
+            arquitectura: { 
+                mesopotamia: "<strong>Zigurats (Ladrillos de adobe):</strong> Como no tenían canteras de piedra, construían grandes templos escalonados amasando barro con paja y secándolo al sol.", 
+                egipto: "<strong>Pirámides (Grandes bloques de piedra):</strong> Fueron los maestros canteros. Movían bloques de piedra de varias toneladas para hacer tumbas gigantescas para sus faraones.", 
+                grecia: "<strong>Templos y columnas de mármol:</strong> Buscaban la belleza y la proporción matemática perfecta. El templo del Partenón en Atenas es su mayor orgullo.", 
+                roma: "<strong>Arcos y cemento (Acueductos y coliseos):</strong> Inventaron el 'hormigón' de la antigüedad. Gracias a esto y al uso del arco, hicieron construcciones colosales, fuertes y muy prácticas." 
+            }
+        };
+
+        // === 40 PREGUNTAS (10 POR CIVILIZACIÓN) - Revisión ortográfica RAE ===
+        const questionsDb = {
+            mesopotamia: [
+                { q: "¿Qué nombre recibe el primer código de leyes escritas ('Ojo por ojo')?", options: [{text: "Código de Hammurabi", correct: true, reason: "¡Exacto! El rey Hammurabi unificó las leyes babilónicas."}, {text: "Derecho romano", correct: false, reason: "El derecho romano es posterior. Mesopotamia tuvo el primero."}, {text: "Los Diez Mandamientos", correct: false, reason: "Estos pertenecen a la tradición hebrea."}] },
+                { q: "¿Entre qué dos ríos floreció Mesopotamia?", options: [{text: "Tigris y Éufrates", correct: true, reason: "¡Sí! Por eso significa 'tierra entre ríos'."}, {text: "El Nilo y el Congo", correct: false, reason: "El Nilo es de Egipto."}, {text: "El Tíber y el Po", correct: false, reason: "Ambos son ríos de Italia (Roma)."}] },
+                { q: "¿Cómo se llama el templo escalonado típico de Mesopotamia?", options: [{text: "Zigurat", correct: true, reason: "¡Correcto! Eran de adobe y servían para observar astros y rezar."}, {text: "Pirámide", correct: false, reason: "Las pirámides son tumbas egipcias."}, {text: "Partenón", correct: false, reason: "El Partenón es el templo griego de Atenas."}] },
+                { q: "¿Cuál es el tipo de escritura más antiguo, inventado por los sumerios?", options: [{text: "Cuneiforme", correct: true, reason: "¡Perfecto! Usaban cuñas sobre arcilla húmeda."}, {text: "Jeroglífico", correct: false, reason: "Es la escritura egipcia basada en dibujos."}, {text: "Alfabeto latino", correct: false, reason: "Es el de Roma y el que usamos hoy."}] },
+                { q: "¿Qué gran invento revolucionó el transporte en Mesopotamia?", options: [{text: "La rueda", correct: true, reason: "¡Así es! Facilitó los carros y la alfarería."}, {text: "La brújula", correct: false, reason: "La brújula fue inventada en la antigua China."}, {text: "El acueducto", correct: false, reason: "Fueron los romanos los grandes maestros del acueducto."}] },
+                { q: "¿Cuál era el título del rey en las ciudades mesopotámicas?", options: [{text: "Lugal", correct: true, reason: "¡Exacto! Significaba 'Hombre grande'."}, {text: "Faraón", correct: false, reason: "Ese es el soberano de Egipto."}, {text: "Emperador", correct: false, reason: "Título usado en Roma y otros imperios grandes."}] },
+                { q: "¿Qué poema épico narra las aventuras de un rey mesopotámico buscando la inmortalidad?", options: [{text: "Epopeya de Gilgamesh", correct: true, reason: "¡Muy bien! Es la obra literaria más antigua conocida."}, {text: "La Ilíada", correct: false, reason: "Narra la guerra de Troya (Grecia)."}, {text: "La Eneida", correct: false, reason: "Es la épica fundacional de Roma."}] },
+                { q: "La matemática mesopotámica se basaba en el número 60 (sistema sexagesimal). ¿Qué usamos hoy de ellos?", options: [{text: "Las horas de 60 minutos", correct: true, reason: "¡Correcto! Gracias a ellos medimos así el tiempo y los ángulos."}, {text: "Los números romanos", correct: false, reason: "Son letras creadas por los romanos (I, V, X)."}, {text: "El número cero", correct: false, reason: "El concepto maduro del cero proviene de la India y los mayas."}] },
+                { q: "¿Qué maravilla del mundo antiguo se encontraba en Babilonia?", options: [{text: "Los Jardines Colgantes", correct: true, reason: "¡Sí! Creados por Nabucodonosor II."}, {text: "El faro de Alejandría", correct: false, reason: "Estaba en Egipto."}, {text: "El coloso de Rodas", correct: false, reason: "Pertenecía a Grecia."}] },
+                { q: "¿De qué material construían sus ciudades al no tener piedra?", options: [{text: "Adobe (barro y paja)", correct: true, reason: "¡Exacto! El sol secaba los ladrillos de arcilla."}, {text: "Mármol blanco", correct: false, reason: "Muy usado en Grecia y Roma."}, {text: "Madera de roble", correct: false, reason: "La madera era escasa en la región mesopotámica."}] }
+            ],
+            egipto: [
+                { q: "¿Quién era considerado un dios viviente en la Tierra?", options: [{text: "El faraón", correct: true, reason: "¡Así es! Gobernador absoluto y deidad."}, {text: "El senador", correct: false, reason: "Político de la república romana."}, {text: "El filósofo", correct: false, reason: "Pensadores famosos de Grecia."}] },
+                { q: "¿Qué río fue vital para el desarrollo de Egipto?", options: [{text: "El río Nilo", correct: true, reason: "¡Correcto! Sus inundaciones daban vida al desierto."}, {text: "El río Éufrates", correct: false, reason: "Pertenece a Mesopotamia."}, {text: "El río Tíber", correct: false, reason: "Río que cruza Roma."}] },
+                { q: "¿Qué función principal tenían las grandes pirámides?", options: [{text: "Eran tumbas reales", correct: true, reason: "¡Exacto! Para proteger al faraón en su vida eterna."}, {text: "Graneros gigantes", correct: false, reason: "Eran monumentos funerarios, no almacenes."}, {text: "Plazas de mercado", correct: false, reason: "Las plazas comerciales eran el 'ágora' en Grecia."}] },
+                { q: "¿Cómo se llama el papel antiguo hecho con plantas del Nilo?", options: [{text: "Papiro", correct: true, reason: "¡Sí! De ahí viene la palabra papel."}, {text: "Pergamino", correct: false, reason: "Se hacía con pieles de animales (Pérgamo)."}, {text: "Arcilla", correct: false, reason: "Usada habitualmente en Mesopotamia."}] },
+                { q: "¿Qué escritura usaban los egipcios basada en dibujos?", options: [{text: "Jeroglíficos", correct: true, reason: "¡Correcto! Eran signos sagrados tallados."}, {text: "Cuneiforme", correct: false, reason: "Signos en forma de cuña de Mesopotamia."}, {text: "Latín", correct: false, reason: "Idioma y alfabeto del imperio romano."}] },
+                { q: "¿Qué proceso realizaban para preservar los cuerpos para el 'Más Allá'?", options: [{text: "Momificación", correct: true, reason: "¡Muy bien! Vaciaban y vendaban el cuerpo cuidadosamente."}, {text: "Incineración", correct: false, reason: "Consiste en quemar el cuerpo, lo cual destruía su creencia del Más Allá."}, {text: "Fosilización", correct: false, reason: "Es un proceso natural de millones de años de la Tierra."}] },
+                { q: "¿Qué criatura mítica tiene cuerpo de león y cabeza humana en Guiza?", options: [{text: "La Esfinge", correct: true, reason: "¡Exacto! Guardiana eterna de las pirámides."}, {text: "El Minotauro", correct: false, reason: "Monstruo de la mitología griega."}, {text: "El grifo", correct: false, reason: "Criatura mitológica de Asia y Grecia."}] },
+                { q: "¿Qué dios egipcio estaba fuertemente asociado con el Sol?", options: [{text: "Ra", correct: true, reason: "¡Correcto! Era el dios principal y dios creador."}, {text: "Zeus", correct: false, reason: "Rey de los dioses en Grecia."}, {text: "Júpiter", correct: false, reason: "Equivalente romano de Zeus."}] },
+                { q: "¿Quién fue una de las faraonas más famosas y poderosas de la historia?", options: [{text: "Hatshepsut", correct: true, reason: "¡Excelente! Gobernó con gran prosperidad y paz."}, {text: "Atenea", correct: false, reason: "Diosa griega de la sabiduría y la guerra estratégica."}, {text: "Livia", correct: false, reason: "Esposa del primer emperador romano, Augusto."}] },
+                { q: "¿Qué objeto permitió descifrar los jeroglíficos en el siglo XIX?", options: [{text: "La piedra de Rosetta", correct: true, reason: "¡Brillante! Tenía el mismo texto tallado en tres escrituras distintas."}, {text: "La piedra filosofal", correct: false, reason: "Mito de la alquimia para crear oro y vida eterna."}, {text: "La piedra negra", correct: false, reason: "Importante reliquia de la religión islámica."}] }
+            ],
+            grecia: [
+                { q: "¿Qué sistema de gobierno, donde votan los ciudadanos, nació en Atenas?", options: [{text: "La democracia", correct: true, reason: "¡Sí! La palabra significa 'el poder del pueblo'."}, {text: "El imperio", correct: false, reason: "Gobierno centralizado conquistador (Roma)."}, {text: "La teocracia", correct: false, reason: "Gobierno de los dioses o sacerdotes (Egipto)."}] },
+                { q: "¿Qué polis (ciudad-estado) destacaba por su duro entrenamiento militar?", options: [{text: "Esparta", correct: true, reason: "¡Exacto! Los niños se preparaban para ser soldados desde los 7 años."}, {text: "Atenas", correct: false, reason: "Atenas priorizaba más la cultura, el arte y la filosofía."}, {text: "Babilonia", correct: false, reason: "Fue una gran y famosa capital en Mesopotamia."}] },
+                { q: "¿Quién fue el famoso filósofo que enseñaba haciendo preguntas en la calle?", options: [{text: "Sócrates", correct: true, reason: "¡Correcto! A su método de hacer preguntas se le llama 'mayéutica'."}, {text: "Julio César", correct: false, reason: "Famoso general y dictador romano."}, {text: "Hammurabi", correct: false, reason: "Rey de Babilonia famoso por sus leyes."}] },
+                { q: "¿Qué evento deportivo crearon los griegos para honrar al dios Zeus?", options: [{text: "Los Juegos Olímpicos", correct: true, reason: "¡Muy bien! Se celebraban cada cuatro años en la ciudad de Olimpia."}, {text: "La lucha de gladiadores", correct: false, reason: "Espectáculo sangriento popular entre los romanos."}, {text: "Las carreras de cuadrigas", correct: false, reason: "Carreras de caballos muy populares en el Circo Máximo de Roma."}] },
+                { q: "¿Cuál es el famoso templo de columnas dedicado a la diosa Atenea?", options: [{text: "El Partenón", correct: true, reason: "¡Exacto! Obra maestra situada en lo alto de la Acrópolis."}, {text: "El Panteón", correct: false, reason: "Espléndido templo de todos los dioses, ubicado en Roma."}, {text: "El zigurat de Ur", correct: false, reason: "Impresionante construcción escalonada de Mesopotamia."}] },
+                { q: "¿Qué poeta de la antigua Grecia escribió 'La Ilíada' y 'La Odisea'?", options: [{text: "Homero", correct: true, reason: "¡Correcto! Sus poemas son la base de la literatura europea."}, {text: "Virgilio", correct: false, reason: "Famoso poeta romano autor de 'La Eneida'."}, {text: "Platón", correct: false, reason: "Fue un gran filósofo, alumno de Sócrates, pero no poeta épico."}] },
+                { q: "¿Dónde creían los griegos que vivían sus dioses más importantes?", options: [{text: "En el monte Olimpo", correct: true, reason: "¡Sí! Creían que era la morada de Zeus y su gran familia."}, {text: "En el río Estigia", correct: false, reason: "Era el oscuro río del inframundo, el reino de los muertos."}, {text: "En las pirámides", correct: false, reason: "Eran la morada final de los faraones egipcios."}] },
+                { q: "¿Qué gran líder de Macedonia extendió la cultura griega hasta la India?", options: [{text: "Alejandro Magno", correct: true, reason: "¡Perfecto! Creó uno de los imperios más asombrosos de la historia antigua."}, {text: "Pericles", correct: false, reason: "Importante líder de Atenas en su edad de mayor esplendor."}, {text: "Augusto", correct: false, reason: "El que se convirtió en el primer emperador de Roma."}] },
+                { q: "¿Qué género teatral inventaron en el que los personajes sufren un final triste?", options: [{text: "La tragedia", correct: true, reason: "¡Exacto! Los actores usaban máscaras con expresiones de tristeza."}, {text: "La comedia", correct: false, reason: "También la inventaron los griegos, pero esta busca hacer reír."}, {text: "El mimo", correct: false, reason: "Actuación basada únicamente en gestos, sin usar la voz."}] },
+                { q: "La plaza pública donde los griegos debatían y compraban se llamaba...", options: [{text: "El ágora", correct: true, reason: "¡Correcto! Era el verdadero corazón vibrante de la polis."}, {text: "El foro", correct: false, reason: "Es el equivalente exacto al ágora, pero en las ciudades romanas."}, {text: "El coliseo", correct: false, reason: "Enorme anfiteatro romano diseñado para dar grandes espectáculos."}] }
+            ],
+            roma: [
+                { q: "¿Cómo llamaban los romanos al mar Mediterráneo, tras conquistar sus orillas?", options: [{text: "Mare Nostrum", correct: true, reason: "¡Sí! Significa 'Nuestro mar' en latín."}, {text: "Mar Egeo", correct: false, reason: "Es el mar principal donde navegó la civilización griega."}, {text: "Océano Atlántico", correct: false, reason: "Se encontraba en los límites del oeste de su gran imperio."}] },
+                { q: "¿Qué enorme edificio de la ciudad de Roma se usaba para las luchas de gladiadores?", options: [{text: "El Coliseo", correct: true, reason: "¡Exacto! También es conocido por los historiadores como Anfiteatro Flavio."}, {text: "El Circo Máximo", correct: false, reason: "Era una pista enorme, pero se usaba para carreras de carros tirados por caballos."}, {text: "El Partenón", correct: false, reason: "Templo de mármol sagrado situado en la ciudad de Atenas."}] },
+                { q: "¿Qué impresionante invento de ingeniería llevaba agua limpia a las ciudades?", options: [{text: "Los acueductos", correct: true, reason: "¡Perfecto! Eran puentes altísimos que usaban la gravedad para mover el agua."}, {text: "Los canales de riego", correct: false, reason: "Fueron zanjas en la tierra, claves en Mesopotamia y Egipto."}, {text: "Los zigurats", correct: false, reason: "Eran masivos templos religiosos escalonados en Mesopotamia."}] },
+                { q: "Antes de ser un imperio gobernado por un emperador, Roma fue una...", options: [{text: "República", correct: true, reason: "¡Muy bien! Estaba dirigida por los representantes del Senado."}, {text: "Democracia directa", correct: false, reason: "Esta forma de voto ciudadano directo ocurrió en la Atenas griega."}, {text: "Teocracia", correct: false, reason: "Gobierno dirigido por sacerdotes o dioses, como pasaba en Egipto."}] },
+                { q: "¿Qué general romano cruzó el río Rubicón y acabó siendo nombrado dictador perpetuo?", options: [{text: "Julio César", correct: true, reason: "¡Correcto! Tras su muerte, pronto comenzaría la época de los emperadores."}, {text: "Alejandro Magno", correct: false, reason: "Fue el más grande conquistador macedonio/griego."}, {text: "Espartaco", correct: false, reason: "Un famoso esclavo y gladiador que lideró una rebelión contra Roma."}] },
+                { q: "¿Cuál es la lengua madre del imperio romano de la cual nació el español?", options: [{text: "El latín", correct: true, reason: "¡Exacto! De ella nacieron también el francés, italiano, rumano..."}, {text: "El griego", correct: false, reason: "Se hablaba en la parte oriental del imperio, pero la oficial era el latín."}, {text: "El arameo", correct: false, reason: "Lengua antigua muy usada en la región de Oriente Próximo."}] },
+                { q: "¿Qué gran aporte romano es hoy la base de las leyes en nuestro mundo?", options: [{text: "El derecho romano", correct: true, reason: "¡Brillante! Estableció las normas modernas sobre contratos, propiedad y juicios."}, {text: "El código de Hammurabi", correct: false, reason: "Es la ley escrita más antigua que existe, pero es de Mesopotamia."}, {text: "La filosofía", correct: false, reason: "La filosofía como método de pensar es el gran legado de Grecia."}] },
+                { q: "¿Cómo se llamaba a los soldados profesionales que formaban el ejército romano?", options: [{text: "Legionarios", correct: true, reason: "¡Sí! Luchaban organizados en formaciones perfectas llamadas legiones."}, {text: "Hoplitas", correct: false, reason: "Así se llamaban los soldados ciudadanos de las polis de Grecia."}, {text: "Samuráis", correct: false, reason: "Célebres y letales guerreros del Japón feudal."}] },
+                { q: "¿Qué famosas 'autopistas' de piedra construyeron para mover rápido a sus tropas?", options: [{text: "Las calzadas", correct: true, reason: "¡Correcto! De ahí viene el famoso refrán: 'Todos los caminos llevan a Roma'."}, {text: "Los canales navegables", correct: false, reason: "Vías de agua artificiales creadas para barcos comerciales."}, {text: "Las murallas", correct: false, reason: "Construcciones defensivas fijas, no vías para moverse y viajar."}] },
+                { q: "¿Quién fue el primer emperador oficial de Roma, marcando el fin de la república?", options: [{text: "Augusto", correct: true, reason: "¡Excelente! Con él se inició una larga época de estabilidad llamada 'Pax Romana'."}, {text: "Julio César", correct: false, reason: "Tuvo el poder absoluto, pero nunca se atrevió a nombrarse emperador oficial."}, {text: "Nerón", correct: false, reason: "Fue un emperador muy posterior y célebre por sus locuras."}] }
+            ]
+        };
+
+        const allQuestions = [...questionsDb.mesopotamia, ...questionsDb.egipto, ...questionsDb.grecia, ...questionsDb.roma];
+
+        // === INTEGRACIÓN GEMINI API (VIA VERCEL SERVERLESS) ===
+        async function fetchGeminiAPI(payload, model = "gemini-2.5-flash-preview-09-2025") {
+            if (window.location.href.startsWith('blob:') || window.location.href.startsWith('file:')) {
+                throw new Error("VERCEL_SETUP");
+            }
+            const url = `/api/gemini?model=${model}`;
+            let retries = 5; let delay = 1000;
+            while (retries > 0) {
+                try {
+                    const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (response.status === 404) {
+                        throw new Error("VERCEL_SETUP");
+                    }
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    return await response.json();
+                } catch (error) {
+                    if (error.message === "VERCEL_SETUP") throw error; // No reintentar si es error de configuración
+                    retries--; if (retries === 0) throw error;
+                    await new Promise(resolve => setTimeout(resolve, delay)); delay *= 2;
+                }
+            }
+        }
+        
+        async function fetchImagenAPI(payload) {
+            if (window.location.href.startsWith('blob:') || window.location.href.startsWith('file:')) {
+                throw new Error("VERCEL_SETUP");
+            }
+            const url = `/api/imagen`;
+            let retries = 5; let delay = 1000;
+            while (retries > 0) {
+                try {
+                    const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (response.status === 404) {
+                        throw new Error("VERCEL_SETUP");
+                    }
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    return await response.json();
+                } catch (error) {
+                    if (error.message === "VERCEL_SETUP") throw error;
+                    retries--; if (retries === 0) throw error;
+                    await new Promise(resolve => setTimeout(resolve, delay)); delay *= 2;
+                }
+            }
+        }
+
+        // === ESTADO DE LA APLICACIÓN ===
+        let state = {
+            player: {
+                name: "", avatarSymbol: "", avatarName: "", rank: "Aprendiz",
+                completedCivs: { mesopotamia: false, egipto: false, grecia: false, roma: false },
+                wonTicTacToe: false
+            },
+            game: { currentCiv: null, questions: [], currentQIndex: 0, scoreRound: 0, mistakesRound: 0, isTicTacToeMode: false },
+            ttt: { board: Array(9).fill(''), targetCell: null },
+            currentCivView: null
+        };
+
+        function closeModals() {
+            document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
+            document.getElementById('modal-overlay').classList.remove('active');
+        }
+
+        function nav(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        // === FASE 1 & 2 ===
+        function checkPassword() {
+            if(document.getElementById('gateway-password').value.trim().toLowerCase() === 'olimpo') {
+                document.getElementById('gateway-error').innerText = ""; nav('screen-onboarding');
+            } else document.getElementById('gateway-error').innerText = "La puerta de piedra permanece cerrada.";
+        }
+
+        function loadTheory(civId) {
+            state.currentCivView = civId; const data = civData[civId];
+            document.getElementById('theory-title').innerText = data.title;
+            document.getElementById('theory-location').innerHTML = data.location;
+            document.getElementById('theory-politics').innerHTML = data.politics;
+            document.getElementById('theory-culture').innerHTML = data.culture;
+            document.getElementById('llm-civ-name').innerText = data.title;
+            
+            // Limpiar Oráculo y Magias
+            document.getElementById('oracle-select').value = ""; 
+            document.getElementById('oracle-result').style.display = 'none';
+            document.getElementById('llm-query').value = ""; 
+            document.getElementById('llm-response').style.display = 'none';
+            document.getElementById('imagen-query').value = "";
+            document.getElementById('imagen-feedback').style.display = 'none';
+            document.getElementById('imagen-response').style.display = 'none';
+            
+            nav('screen-theory');
+        }
+
+        function useOracle() {
+            const concept = document.getElementById('oracle-select').value;
+            const res = document.getElementById('oracle-result');
+            if(!concept) { res.style.display = 'none'; return; }
+
+            const currentCiv = state.currentCivView;
+            
+            // Generamos un panel visual comparativo
+            let html = `<div style="background: rgba(255, 255, 255, 0.9); border: 3px solid var(--gold); border-radius: 12px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);">`;
+            
+            // 1. Destacar la civilización que estamos estudiando
+            html += `
+                <div style="background: rgba(212, 175, 55, 0.15); border-left: 5px solid var(--gold); padding: 15px; margin-bottom: 20px; border-radius: 4px;">
+                    <h4 style="color: var(--lapis-dark); font-size: 1.3rem; margin-bottom: 8px;">📍 En ${civData[currentCiv].title}:</h4>
+                    <p style="font-size: 1.15rem; color: var(--text-dark); line-height: 1.4;">${oracleData[concept][currentCiv]}</p>
+                </div>
+            `;
+            
+            html += `<h5 style="color: var(--stone-dark); font-size: 1rem; border-bottom: 1px solid var(--stone); padding-bottom: 5px; margin-bottom: 15px;">Mientras tanto, en las otras culturas...</h5>`;
+            
+            // 2. Mostrar las demás resumidas
+            html += `<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">`;
+            for(let civ in oracleData[concept]) {
+                if(civ !== currentCiv) {
+                    html += `
+                        <div style="background: var(--marble); border: 1px solid var(--stone); padding: 12px; border-radius: 6px;">
+                            <strong style="color: var(--terracotta-dark); font-size: 1.1rem; display: block; margin-bottom: 5px;">${civData[civ].title}</strong>
+                            <span style="font-size: 0.95rem; color: #444; line-height: 1.3; display: block;">${oracleData[concept][civ]}</span>
+                        </div>
+                    `;
+                }
+            }
+            html += `</div></div>`;
+            
+            res.innerHTML = html;
+            res.style.display = 'block';
+        }
+
+        // === LLM API Funciones Mágicas ===
+        async function askSabioLLM() {
+            const q = document.getElementById('llm-query').value.trim();
+            const btn = document.getElementById('btn-ask-llm');
+            const res = document.getElementById('llm-response');
+            if(!q) return;
+            btn.classList.add('loading'); btn.innerText = "Consultando a los astros... ⏳"; res.style.display = 'none';
+            
+            const prompt = `Eres 'El Sabio del Tiempo', un experto que explica la antigua civilización de ${civData[state.currentCivView].title} a niños de primaria de 11 años. 
+            REGLA ESTRICTA: Solo respondes preguntas educativas y relacionadas DIRECTAMENTE con ${civData[state.currentCivView].title}. Si el niño pregunta cosas modernas (aviones, internet), temas inapropiados o sobre otras épocas, NIÉGATE amablemente en personaje, explicando que solo puedes hablar de la época y cultura en la que estás.
+            El niño te pregunta: "${q}". 
+            Responde de forma muy amigable, directa y fascinante (máximo 2 párrafos breves). Usa emojis.`;
+
+            try {
+                const data = await fetchGeminiAPI({contents: [{ parts: [{ text: prompt }] }]});
+                
+                // Manejo de errores de conexión o formato
+                if (!data.candidates || !data.candidates[0].content) {
+                    throw new Error(data.error ? data.error.message : "Error desconocido de Gemini");
+                }
+                
+                res.innerHTML = `<strong>🧙‍♂️ El Sabio responde:</strong><br><br>${data.candidates[0].content.parts[0].text.replace(/\n/g, '<br>')}`;
+                res.style.display = 'block';
+            } catch (e) {
+                if (e.message !== "VERCEL_SETUP") console.error(e);
+                res.innerHTML = "Error temporal en el portal del tiempo. " + (e.message === "VERCEL_SETUP" ? "Recuerda que estas magias solo funcionarán al publicar este código en Vercel." : "Los dioses no responden."); 
+                res.style.display = 'block'; 
+            }
+            finally { btn.classList.remove('loading'); btn.innerText = "🔮 Consultar al Sabio"; }
+        }
+
+        async function generateHistoricalImage() {
+            const q = document.getElementById('imagen-query').value.trim();
+            const btn = document.getElementById('btn-generate-image');
+            const cont = document.getElementById('imagen-response');
+            const feedback = document.getElementById('imagen-feedback');
+            if(!q) return;
+            
+            btn.classList.add('loading'); btn.innerText = "Consultando al Sabio... ⏳"; 
+            cont.style.display = 'none';
+            feedback.style.display = 'none';
+            
+            try {
+                // 1. VALIDACIÓN CON GEMINI TEXT
+                const civName = civData[state.currentCivView].title;
+                const valPrompt = `Eres el Sabio del Tiempo. Un niño de 11 años te pide pintar esta escena en la época de ${civName}: "${q}". 
+                Evalúa estrictamente si es históricamente coherente en esa época (ejemplo: NO puede haber aviones, móviles, extraterrestres, ni cosas modernas) y si es apropiado/educativo.
+                Si es válido, responde SÓLO con la palabra "VALIDO".
+                Si NO es válido o coherente con esa época, responde SÓLO con "INVALIDO|" seguido de un mensaje muy amable de 1 o 2 líneas explicando al niño por qué no puedes pintar eso en esa época.`;
+                
+                const valRes = await fetchGeminiAPI({contents: [{ parts: [{ text: valPrompt }] }]});
+                
+                if (!valRes.candidates || !valRes.candidates[0].content) {
+                    throw new Error(valRes.error ? valRes.error.message : "Fallo en la validación");
+                }
+                
+                const valText = valRes.candidates[0].content.parts[0].text.trim();
+
+                if (valText.startsWith("INVALIDO")) {
+                    const reason = valText.split("|")[1] || "El Sabio dice: Eso no encaja en esta época, joven viajero. ¡Pídeme algo histórico!";
+                    feedback.innerHTML = `<strong>🧙‍♂️ El Sabio detiene su pincel:</strong><br>${reason}`;
+                    feedback.style.display = 'block';
+                    return;
+                }
+
+                // 2. GENERACIÓN DE IMAGEN
+                btn.innerText = "Pintando visión mágica... ⏳";
+                const res = await fetchImagenAPI({ instances: [{ prompt: `Pintura digital de muy alta calidad y estilo histórico realista sobre la civilización antigua de ${civName}. Escena: ${q}.` }], parameters: { sampleCount: 1 }});
+                
+                if (!res.predictions || !res.predictions[0]) {
+                    throw new Error(res.error ? res.error.message : "Error desconocido de Imagen");
+                }
+                
+                document.getElementById('generated-historical-img').src = `data:image/png;base64,${res.predictions[0].bytesBase64Encoded}`;
+                cont.style.display = 'block';
+            } catch (e) { 
+                if (e.message !== "VERCEL_SETUP") console.error(e);
+                alert("Mis pinturas se han secado o " + (e.message === "VERCEL_SETUP" ? "falta publicarlo en Vercel para que funcione." : "hubo un error. Inténtalo más tarde.")); 
+            }
+            finally { btn.classList.remove('loading'); btn.innerText = "🖌️ Pintar Visión"; }
+        }
+
+        // === ARENA ===
+        function selectAvatar(name, symbol) {
+            state.player.avatarName = name; state.player.avatarSymbol = symbol;
+            document.querySelectorAll('.avatar-option').forEach(el => el.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+        }
+
+        function enterArena() {
+            const nameInput = document.getElementById('player-name').value.trim();
+            const err = document.getElementById('register-error');
+            if(nameInput.length < 2) { err.innerText = "Por favor, escribe tu nombre."; return; }
+            if(!state.player.avatarName) { err.innerText = "¡No te olvides de elegir un personaje!"; return; }
+            err.innerText = ""; state.player.name = nameInput;
+            
+            // CHEAT CODE VOLDEMORT
+            if(state.player.name.toLowerCase() === 'voldemort') {
+                state.player.completedCivs = {mesopotamia:true, egipto:true, grecia:true, roma:true};
+                state.player.wonTicTacToe = true; 
+            }
+            updateRankAndUI(); nav('screen-levels');
+        }
+
+        function updateRankAndUI() {
+            let completedCount = Object.values(state.player.completedCivs).filter(Boolean).length;
+            if(completedCount === 0) state.player.rank = "Aprendiz";
+            else if(completedCount === 1) state.player.rank = "Ciudadano";
+            else if(completedCount === 2) state.player.rank = "Patricio";
+            else if(completedCount === 3) state.player.rank = "Senador";
+            else if(completedCount === 4) state.player.rank = "Emperador";
+
+            if(state.player.wonTicTacToe) state.player.rank = "Titán del Tiempo";
+
+            document.getElementById('hud-name').innerText = state.player.name;
+            document.getElementById('hud-avatar').innerText = state.player.avatarSymbol;
+            document.getElementById('hud-rank').innerText = state.player.rank;
+
+            const civKeys = ['mesopotamia', 'egipto', 'grecia', 'roma'];
+            civKeys.forEach(civ => {
+                const btn = document.getElementById(`btn-lvl-${civ}`);
+                if(state.player.completedCivs[civ]) {
+                    btn.classList.add('completed');
+                    btn.innerText = `Dominado: ${civData[civ].title}`;
+                }
+            });
+
+            const btnFinal = document.getElementById('btn-final-level');
+            if(completedCount === 4) {
+                btnFinal.style.display = 'block';
+            }
+        }
+
+        function startGame(civId) {
+            state.game.isTicTacToeMode = false;
+            state.game.currentCiv = civId;
+            state.game.questions = [...questionsDb[civId]].sort(() => Math.random() - 0.5);
+            state.game.currentQIndex = 0; 
+            state.game.scoreRound = 0;
+            state.game.mistakesRound = 0; // REINICIAR FALLOS
+            
+            document.getElementById('game-name').innerText = `${state.player.name} (${state.player.avatarSymbol})`;
+            document.getElementById('question-civ').innerText = `Desafío: ${civData[civId].title}`;
+            
+            renderQuestion(); nav('screen-game');
+        }
+
+        function renderQuestion() {
+            document.getElementById('game-score').innerText = `${state.game.scoreRound}/10`;
+            
+            // Actualizar interfaz visual de fallos
+            const mistakesLeft = 1 - state.game.mistakesRound;
+            const mistakesEl = document.getElementById('game-mistakes');
+            mistakesEl.innerText = mistakesLeft;
+            mistakesEl.style.color = mistakesLeft === 0 ? '#dc3545' : '#f59e0b';
+
+            const qData = state.game.questions[state.game.currentQIndex];
+            document.getElementById('question-counter').innerText = `Pregunta ${state.game.currentQIndex + 1} de 10`;
+            document.getElementById('question-text').innerText = qData.q;
+            
+            const cont = document.getElementById('options-container'); cont.innerHTML = "";
+            const options = [...qData.options].sort(() => Math.random() - 0.5);
+            options.forEach(opt => {
+                const btn = document.createElement('button'); btn.className = 'option-btn'; btn.innerText = opt.text;
+                btn.onclick = () => handleAnswer(opt, btn); cont.appendChild(btn);
+            });
+        }
+
+        function handleAnswer(opt, btn) {
+            document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+            
+            // Aseguramos que el botón de Continuar tenga la función por defecto
+            document.getElementById('btn-sabio-continue').onclick = nextQuestion;
+
+            if(opt.correct) {
+                btn.classList.add('correct'); 
+                state.game.scoreRound++; 
+                showSabio(true, opt.reason);
+            } else {
+                btn.classList.add('wrong'); 
+                state.game.mistakesRound++; 
+                
+                // Mostrar la opción correcta a nivel visual
+                document.querySelectorAll('.option-btn').forEach(b => {
+                    const o = state.game.questions[state.game.currentQIndex].options.find(x => x.text === b.innerText);
+                    if(o && o.correct) b.classList.add('correct');
+                });
+
+                if (state.game.mistakesRound === 1) {
+                    showSabio(false, opt.reason + "<br><br>⚠️ <em>¡Cuidado! Los dioses te dan una segunda oportunidad, pero has gastado tu margen de error. Un fallo más y serás expulsado.</em>");
+                } else {
+                    showSabio(false, opt.reason + "<br><br>❌ <em>¡Has fallado por segunda vez! Los dioses te expulsan de la Arena. Debes volver a iniciar este desafío.</em>");
+                }
+            }
+        }
+
+        function showSabio(isCorrect, text) {
+            const m = document.getElementById('sabio-feedback');
+            const o = document.getElementById('modal-overlay');
+            const t = document.getElementById('sabio-title');
+            
+            if(isCorrect) { t.innerText = "¡Respuesta correcta!"; t.className = "correct-title"; }
+            else { t.innerText = "El Sabio te corrige..."; t.className = "wrong-title"; }
+            
+            document.getElementById('sabio-text').innerHTML = `<strong>${text}</strong>`;
+            o.classList.add('active'); m.classList.add('active');
+        }
+
+        function nextQuestion() {
+            closeModals();
+            if(state.game.isTicTacToeMode) { return; }
+
+            // Lógica de expulsión por fallos
+            if (state.game.mistakesRound >= 2) {
+                nav('screen-levels');
+                return;
+            }
+
+            state.game.currentQIndex++;
+            if(state.game.currentQIndex < 10) {
+                renderQuestion();
+            } else {
+                // Si llega aquí, significa que respondió las 10 preguntas con 0 o 1 fallo
+                alert(`¡Felicidades! Has sobrevivido a la prueba y dominado los secretos de ${civData[state.game.currentCiv].title}.`);
+                state.player.completedCivs[state.game.currentCiv] = true;
+                updateRankAndUI(); 
+                nav('screen-levels');
+            }
+        }
+
+        // === 3 EN RAYA (TIC-TAC-TOE) ===
+        function startTicTacToe() {
+            state.game.isTicTacToeMode = true;
+            state.ttt.board = Array(9).fill('');
+            document.getElementById('ttt-name').innerText = state.player.name;
+            renderTTTBoard(); nav('screen-tictactoe');
+        }
+
+        function renderTTTBoard() {
+            const grid = document.getElementById('ttt-grid'); grid.innerHTML = '';
+            state.ttt.board.forEach((cell, idx) => {
+                const div = document.createElement('div');
+                div.className = `ttt-cell ${cell ? cell.toLowerCase() : ''}`;
+                div.innerText = cell;
+                div.onclick = () => clickTTTCell(idx);
+                grid.appendChild(div);
+            });
+        }
+
+        function clickTTTCell(idx) {
+            if(state.ttt.board[idx] !== '') return;
+            state.ttt.targetCell = idx;
+            
+            const qData = allQuestions[Math.floor(Math.random() * allQuestions.length)];
+            document.getElementById('ttt-q-text').innerText = qData.q;
+            
+            const cont = document.getElementById('ttt-q-options'); cont.innerHTML = "";
+            const options = [...qData.options].sort(() => Math.random() - 0.5);
+            options.forEach(opt => {
+                const btn = document.createElement('button'); btn.className = 'option-btn'; btn.innerText = opt.text;
+                btn.onclick = () => handleTTTAnswer(opt, btn); cont.appendChild(btn);
+            });
+            
+            document.getElementById('modal-overlay').classList.add('active');
+            document.getElementById('ttt-question-modal').classList.add('active');
+        }
+
+        function handleTTTAnswer(opt, btn) {
+            document.querySelectorAll('#ttt-question-modal .option-btn').forEach(b => b.disabled = true);
+            closeModals();
+            
+            if(opt.correct) {
+                state.ttt.board[state.ttt.targetCell] = 'X';
+                showSabio(true, "¡Conquistas esta casilla! " + opt.reason);
+                document.getElementById('btn-sabio-continue').onclick = () => { closeModals(); postPlayerTurn(); };
+            } else {
+                showSabio(false, "El Sabio toma la iniciativa... " + opt.reason);
+                document.getElementById('btn-sabio-continue').onclick = () => { closeModals(); postPlayerTurn(); };
+            }
+        }
+
+        function postPlayerTurn() {
+            renderTTTBoard();
+            
+            // Comprobación de Victoria
+            if(checkTTTWin('X')) { 
+                showSabio(true, "¡HAS VENCIDO AL SABIO! Eres digno de la gloria eterna. El tiempo ahora te pertenece."); 
+                document.getElementById('btn-sabio-continue').onclick = () => {
+                    closeModals();
+                    state.player.wonTicTacToe = true; 
+                    updateRankAndUI(); 
+                    nav('screen-levels');
+                };
+                return; 
+            }
+            
+            // Comprobación de Empate
+            if(state.ttt.board.every(c => c !== '')) { 
+                showSabio(false, "⚔️ Habeis quedado en empate... Pero los dioses exigen una victoria absoluta. ¡Volvamos a jugar!"); 
+                document.getElementById('btn-sabio-continue').onclick = () => {
+                    closeModals();
+                    startTicTacToe(); // Reintento automático
+                };
+                return; 
+            }
+            
+            // Turno del Sabio (IA Inteligente con margen de error del 30%)
+            setTimeout(() => {
+                const b = state.ttt.board;
+                let bestMove = -1;
+                const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+                
+                // Un 30% de las veces, el Sabio "se despista" y juega de forma menos óptima
+                const isDistracted = Math.random() < 0.30;
+
+                if (!isDistracted) {
+                    // 1. Intentar ganar
+                    for(let comb of wins) {
+                        let oCount = comb.filter(i => b[i] === 'O').length;
+                        let emptyCount = comb.filter(i => b[i] === '').length;
+                        if(oCount === 2 && emptyCount === 1) bestMove = comb.find(i => b[i] === '');
+                    }
+                    
+                    // 2. Bloquear al jugador si no podemos ganar
+                    if (bestMove === -1) {
+                        for(let comb of wins) {
+                            let xCount = comb.filter(i => b[i] === 'X').length;
+                            let emptyCount = comb.filter(i => b[i] === '').length;
+                            if(xCount === 2 && emptyCount === 1) bestMove = comb.find(i => b[i] === '');
+                        }
+                    }
+                    
+                    // 3. Tomar el centro
+                    if (bestMove === -1 && b[4] === '') bestMove = 4;
+                }
+                
+                // 4. Tomar esquinas o bordes (o movimiento aleatorio si se despistó)
+                if (bestMove === -1) {
+                    let emptyIndices = [];
+                    b.forEach((c, i) => { if(c==='') emptyIndices.push(i); });
+                    if(emptyIndices.length > 0) {
+                        if (isDistracted) {
+                            bestMove = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+                        } else {
+                            // Preferir esquinas
+                            let corners = emptyIndices.filter(i => [0,2,6,8].includes(i));
+                            if(corners.length > 0) bestMove = corners[Math.floor(Math.random() * corners.length)];
+                            else bestMove = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+                        }
+                    }
+                }
+
+                if(bestMove !== -1) {
+                    state.ttt.board[bestMove] = 'O';
+                    renderTTTBoard();
+                    
+                    // Comprobación de Derrota
+                    if(checkTTTWin('O')) { 
+                        showSabio(false, "❌ El Sabio te ha derrotado en estrategia. ¡Pero el tiempo te permite reintentarlo las veces que necesites!"); 
+                        document.getElementById('btn-sabio-continue').onclick = () => {
+                            closeModals();
+                            startTicTacToe(); // Reintento automático
+                        };
+                        return; 
+                    }
+                }
+            }, 500);
+        }
+
+        function checkTTTWin(player) {
+            const b = state.ttt.board;
+            const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+            return wins.some(comb => comb.every(i => b[i] === player));
+        }
+
+        // === INFORME DE TRIUNFO ===
+        function checkTriumph() {
+            document.getElementById('diploma-name').innerText = state.player.name + ` el ${state.player.avatarName}`;
+            document.getElementById('diploma-rank').innerText = state.player.rank;
+            
+            const dueloStatus = document.getElementById('diploma-duelo');
+            if (state.player.wonTicTacToe) {
+                dueloStatus.innerHTML = "¡Superado con gloria! ⚡";
+                dueloStatus.style.color = "var(--gold-dark)";
+            } else {
+                dueloStatus.innerHTML = "Aún no superado ❌";
+                dueloStatus.style.color = "var(--terracotta)";
+            }
+            
+            nav('screen-triumph');
+        }
+
+        // === EXPORTACIÓN DE PDF DE ALTA PRECISIÓN ===
+        async function downloadPDF() {
+            const btn = document.querySelector('button[onclick="downloadPDF()"]');
+            const originalText = btn.innerText;
+            btn.innerText = "Forjando el PDF... ⏳";
+            btn.disabled = true;
+
+            try {
+                const { jsPDF } = window.jspdf;
+                const element = document.getElementById('diploma');
+                
+                // Tomamos una "fotografía" (canvas) del contenedor con alta resolución
+                const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+                const imgData = canvas.toDataURL('image/png');
+                
+                // Creamos un documento A4 estándar en formato vertical
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+                
+                // Márgenes y cálculo matemático de proporciones para forzar el encaje
+                const margin = 15; 
+                const maxImgWidth = pdfWidth - (margin * 2);
+                const maxImgHeight = pdfHeight - (margin * 2);
+                
+                const imgProps = pdf.getImageProperties(imgData);
+                let imgWidth = maxImgWidth;
+                let imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+                
+                // Si tras calcular la anchura vemos que el alto se sale del papel, 
+                // recalculamos basándonos en la altura máxima permitida
+                if (imgHeight > maxImgHeight) {
+                    imgHeight = maxImgHeight;
+                    imgWidth = (imgProps.width * imgHeight) / imgProps.height;
+                }
+                
+                // Centramos la imagen en el folio A4
+                const x = (pdfWidth - imgWidth) / 2;
+                const y = margin; 
+                
+                pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
+                pdf.save("Diploma_Odisea_del_Tiempo.pdf");
+            } catch (error) {
+                console.error("Error mágico al generar el PDF:", error);
+                alert("Hubo un error al forjar tu diploma en PDF.");
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+
+    </script>
+</body>
+</html>
